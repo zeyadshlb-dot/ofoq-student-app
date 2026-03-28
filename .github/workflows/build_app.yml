@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. سحب الكود من المستودع
+      # 1. سحب الكود
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      # 2. تسطيب بيئة الجافا عشان الأندرويد
+      # 2. تسطيب الجافا
       - name: ☕ Setup Java
         uses: actions/setup-java@v3
         with:
@@ -40,15 +40,24 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 4. تحميل مكاتب المشروع
+      # 4. تحميل المكاتب
       - name: 📦 Install Dependencies
         run: flutter pub get
 
-      # 5. تشغيل سكريبت الصياعة (الـ White-Label Engine)
+      # 5. تشغيل سكريبت الصياعة (تغيير الهوية)
       - name: 🏗️ Run Ofoq Build Script
         run: dart run scripts/white_label.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
 
-      # 6. رفع التطبيق المباشر كـ Release 
+      # 6. البناء الحقيقي (Release Mode) - ده اللي هيحل مشكلة الـ 300 ميجا
+      - name: 🛠️ Build Release Bundle
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" == "apk" ]; then
+            flutter build apk --release
+          else
+            flutter build appbundle --release
+          fi
+
+      # 7. رفع الملفات لـ GitHub Releases (التحميل المباشر)
       - name: 🚀 Create Release and Upload Direct App
         uses: softprops/action-gh-release@v1
         with:
@@ -60,7 +69,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. السحر: إرسال اللينكات للباك إند أوتوماتيك
+      # 8. السحر: إرسال اللينكات للباك إند (Go) أوتوماتيك
       - name: 🌐 Notify Go Backend with App Links
         run: |
           curl -X PATCH https://unglowing-jovita-expectable.ngrok-free.dev/api/v1/tenants/layout/app-status \
