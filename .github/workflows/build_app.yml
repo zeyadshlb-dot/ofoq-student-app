@@ -1,6 +1,5 @@
 name: Ofoq White-Label Builder 🚀
 
-# إمتى الأكشن ده يشتغل؟
 on:
   workflow_dispatch:
     inputs:
@@ -45,16 +44,18 @@ jobs:
       - name: 📦 Install Dependencies
         run: flutter pub get
 
-      # 5. تشغيل سكريبت زياد الصايع (الـ White-Label Engine)
+      # 5. تشغيل سكريبت الصياعة (الـ White-Label Engine)
       - name: 🏗️ Run Ofoq Build Script
-        # 👇 التعديل حصل هنا يا معلم 👇
         run: dart run scripts/white_label.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
 
-      # 6. رفع التطبيق النهائي عشان تحمله
-      - name: 📤 Upload Release Build
-        uses: actions/upload-artifact@v4
+      # 6. رفع التطبيق المباشر كـ Release عشان التحميل المباشر للطلاب
+      - name: 🚀 Create Release and Upload Direct App
+        uses: softprops/action-gh-release@v1
         with:
-          name: app-release-${{ github.event.inputs.slug }}-${{ github.event.inputs.build_type }}
-          path: |
+          tag_name: v1.0-${{ github.event.inputs.slug }}-${{ github.run_id }}
+          name: App Release - ${{ github.event.inputs.slug }}
+          files: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
