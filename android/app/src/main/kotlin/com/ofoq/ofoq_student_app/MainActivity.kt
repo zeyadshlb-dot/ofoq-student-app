@@ -1,0 +1,16 @@
+package com.ofoq.ofoq_student_app
+
+import android.os.Bundle
+import android.view.WindowManager
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // تفعيل FLAG_SECURE قبل أي حاجة — يمنع Screenshot و Screen Recording
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+        super.onCreate(savedInstanceState)
+    }
+}
