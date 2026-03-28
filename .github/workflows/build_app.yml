@@ -1,0 +1,59 @@
+name: Ofoq White-Label Builder 🚀
+
+# إمتى الأكشن ده يشتغل؟
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Tenant Slug (e.g., elkemiawy)'
+        required: true
+        type: string
+      build_type:
+        description: 'Build Type (apk or aab)'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - aab
+
+jobs:
+  build:
+    name: Build ${{ github.event.inputs.build_type }} for ${{ github.event.inputs.slug }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. سحب الكود من المستودع
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # 2. تسطيب بيئة الجافا عشان الأندرويد
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. تسطيب فلاتر
+      - name: 🦋 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 4. تحميل مكاتب المشروع
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      # 5. تشغيل سكريبت زياد الصايع (الـ White-Label Engine)
+      - name: 🏗️ Run Ofoq Build Script
+        run: dart run scripts/build_tenant.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
+
+      # 6. رفع التطبيق النهائي عشان تحمله
+      - name: 📤 Upload Release Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.event.inputs.slug }}-${{ github.event.inputs.build_type }}
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
