@@ -48,7 +48,7 @@ jobs:
       - name: 🏗️ Run Ofoq Build Script
         run: dart run scripts/white_label.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
 
-      # 6. رفع التطبيق المباشر كـ Release عشان التحميل المباشر للطلاب
+      # 6. رفع التطبيق المباشر كـ Release 
       - name: 🚀 Create Release and Upload Direct App
         uses: softprops/action-gh-release@v1
         with:
@@ -59,3 +59,16 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 7. السحر: إرسال اللينكات للباك إند أوتوماتيك
+      - name: 🌐 Notify Go Backend with App Links
+        run: |
+          curl -X PATCH https://unglowing-jovita-expectable.ngrok-free.dev/api/v1/tenants/layout/app-status \
+          -H "Content-Type: application/json" \
+          -H "ngrok-skip-browser-warning: true" \
+          -d '{
+            "slug": "${{ github.event.inputs.slug }}",
+            "has_app": true,
+            "apk_url": "https://github.com/zeyadshlb-dot/ofoq-student-app/releases/download/v1.0-${{ github.event.inputs.slug }}-${{ github.run_id }}/app-release.apk",
+            "aab_url": "https://github.com/zeyadshlb-dot/ofoq-student-app/releases/download/v1.0-${{ github.event.inputs.slug }}-${{ github.run_id }}/app-release.aab"
+          }'
