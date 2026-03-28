@@ -22,43 +22,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. سحب الكود
+      # 1. سحب الكود من المستودع
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      # 2. تسطيب الجافا
+      # 2. تسطيب بيئة الجافا
       - name: ☕ Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # 3. تسطيب فلاتر
+      # 3. تسطيب فلاتر (الإصدار المستقر)
       - name: 🦋 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      # 4. تحميل المكاتب
-      - name: 📦 Install Dependencies
-        run: flutter pub get
+      # 4. تنظيف المشروع وتحميل المكاتب (مهم جداً للحجم)
+      - name: 📦 Clean & Install Dependencies
+        run: |
+          flutter clean
+          flutter pub get
 
-      # 5. تشغيل سكريبت الصياعة (تغيير الهوية)
-      - name: 🏗️ Run Ofoq Build Script
+      # 5. تشغيل سكريبت الصياعة (تغيير اللوجو والألوان والاسم)
+      - name: 🏗️ Run Ofoq White-Label Script
         run: dart run scripts/white_label.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
 
-      # 6. البناء الحقيقي (Release Mode) - ده اللي هيحل مشكلة الـ 300 ميجا
-      - name: 🛠️ Build Release Bundle
+      # 6. البناء الحقيقي للإنتاج (Release Mode)
+      - name: 🛠️ Build Production App
         run: |
           if [ "${{ github.event.inputs.build_type }}" == "apk" ]; then
-            flutter build apk --release
+            flutter build apk --release --no-tree-shake-icons
           else
-            flutter build appbundle --release
+            flutter build appbundle --release --no-tree-shake-icons
           fi
 
-      # 7. رفع الملفات لـ GitHub Releases (التحميل المباشر)
-      - name: 🚀 Create Release and Upload Direct App
+      # 7. رفع الملفات لـ GitHub Releases (التحميل المباشر للطلاب)
+      - name: 🚀 Publish to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0-${{ github.event.inputs.slug }}-${{ github.run_id }}
@@ -69,8 +71,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 8. السحر: إرسال اللينكات للباك إند (Go) أوتوماتيك
-      - name: 🌐 Notify Go Backend with App Links
+      # 8. السحر: إرسال اللينكات للباك إند (Go) عبر Ngrok
+      - name: 🌐 Notify Go Backend with Direct Links
         run: |
           curl -X PATCH https://unglowing-jovita-expectable.ngrok-free.dev/api/v1/tenants/layout/app-status \
           -H "Content-Type: application/json" \
