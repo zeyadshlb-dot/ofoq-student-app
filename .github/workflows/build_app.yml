@@ -47,7 +47,8 @@ jobs:
 
       # 5. تشغيل سكريبت زياد الصايع (الـ White-Label Engine)
       - name: 🏗️ Run Ofoq Build Script
-        run: dart run scripts/build_tenant.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
+        # 👇 التعديل حصل هنا يا معلم 👇
+        run: dart run scripts/white_label.dart --slug ${{ github.event.inputs.slug }} --build ${{ github.event.inputs.build_type }}
 
       # 6. رفع التطبيق النهائي عشان تحمله
       - name: 📤 Upload Release Build
